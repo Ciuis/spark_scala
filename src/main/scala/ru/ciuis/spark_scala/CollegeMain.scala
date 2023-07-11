@@ -4,17 +4,17 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession, streaming}
 
 import java.util.Properties
 
-object Main {
+object CollegeMain {
   def main(args: Array[String]): Unit = {
     val spark: SparkSession = SparkSession.builder
       .appName("read_csv")
       .master("local")
       .getOrCreate()
 
-    val path = "./College_Data.csv"
+    val source = "./College_Data.csv"
     var df: DataFrame = spark.read.format("csv")
       .option("header", "true")
-      .load(path)
+      .load(source)
 
     df = df.withColumn(
       "perc_accept",

@@ -3,7 +3,10 @@ package ru.ciuis.spark_scala
 import org.apache.spark.sql.functions.concat
 import org.apache.spark.sql.functions.lit
 import org.apache.spark.Partition
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SaveMode, SparkSession}
+
+import java.util.Properties
 
 object RestaurantsMain {
   def main(args: Array[String]): Unit = {
@@ -12,9 +15,9 @@ object RestaurantsMain {
   }
 
   private def start(): Unit = {
-    val source: String = "./Restaurants_in_Wake_County.csv"
+    val source: String = "./datasets/Restaurants_in_Wake_County.csv"
 
-    val spark: SparkSession = SparkSession.builder
+    lazy val spark: SparkSession = SparkSession.builder
       .appName("Restaurants in Wake County, NC")
       .master("local")
       .getOrCreate()
@@ -61,5 +64,21 @@ object RestaurantsMain {
     println(s"Partition count after repartition ${df.rdd.partitions.length}")
 
     df.show(false)
+
+    val dbConnectionUrl: String = "jdbc:postgresql://localhost/postgres"
+    val prop: Properties = new Properties()
+    prop.setProperty("driver", "org.postgresql.Driver")
+    prop.setProperty("user", "postgres")
+    prop.setProperty("password", "123456")
+    df.write.mode("append")
+      .mode(SaveMode.Overwrite)
+      .jdbc(dbConnectionUrl, "restaurants", prop)
+    println("DATA WRITTEN TO DB")
+
+    val schema: StructType = df.schema
+    val schemaAsJSON = schema.prettyJson
+    println(s"*** Schema as JSON $schemaAsJSON")
+
+    spark.stop()
   }
 }

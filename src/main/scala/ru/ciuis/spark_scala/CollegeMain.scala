@@ -11,7 +11,7 @@ object CollegeMain {
       .master("local")
       .getOrCreate()
 
-    val source = "./College_Data.csv"
+    val source = "./datasets/College_Data.csv"
     var df: DataFrame = spark.read.format("csv")
       .option("header", "true")
       .load(source)
